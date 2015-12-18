@@ -1,0 +1,34 @@
+<!doctype HTML>
+<html>
+	<head>
+		<title>Subreddit Search</title>
+		<script src="search.js"></script>
+		<style>
+			*{
+				font-family: sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+		<p>input: findRelated(subreddit, limit).then(function(val){ //your code here });</p>
+		<p>Example: findRelated("uiuc", 3).then(function(val){console.log(val);})</p>
+
+		<p>Note: To use this yourself have to host this on apache or another webserver</p>
+
+		<br>
+		<p>Test here</p>
+		<form onsubmit="return browserTest()">
+			<input type="text" id="sub" placeholder="Subreddit Name"></input>
+			<input type="text" id="max" placeholder="Max Results"></input>
+			<input type="submit"/>
+		</form>
+		<script>
+			function browserTest(){
+				findRelated(document.forms[0].sub.value, document.forms[0].max.value).then(function(val){
+					alert(val.join('\n'));
+				})
+				return false;
+			}
+		</script>
+	</body>
+</html>
