@@ -1,7 +1,7 @@
 /*
 function: findRelated
 input: 	subreddit - target subreddit to find relations with
-		limit - number of matches to return
+		limit - maximum number of matches to return
 output: returns a promise with the array of matches, # of elements is up to the limit
 */
 
@@ -63,3 +63,107 @@ function shuffle(array) {
 	}
 	return array;
 }
+
+/*
+function: findCombinedRelated
+input: 	subreddits - array of subreddits to find relations for
+		limit - maximum number of matches to return 
+output: returns a promise with the array of matches, which is calculated with highest frequency of incidence
+*/
+function findCombinedRelated(subreddits, limit){
+	return new Promise(function(resolve, reject){
+		for(var i = 0; i < subreddits.length; i++){
+			subreddits[i] = subreddits[i].toLowerCase();
+		}
+		var oReq = new XMLHttpRequest();
+		oReq.onload = function(e){
+			var matches = {};
+			var treeData = JSON.parse(this.responseText);
+			for(var key in treeData.edges){
+				for(var i = 0; i < subreddits.length; i++){
+					if((treeData.edges[key].source).toLowerCase() === subreddits[i]){
+						if(subreddits[i] in matches){
+							matches[(treeData.edges[key].target).toLowerCase()]++;
+						}
+						else
+							matches[(treeData.edges[key].target).toLowerCase()] = 1;
+					}
+				}
+			}
+			var sortArray = [];
+			for(var key in matches)
+				sortArray.push([key, matches[key]]);
+			
+			sortArray.sort(function(a, b){
+				return b[1] - a[1];
+			});
+
+			var returnArray = [];
+
+			for(var i = 0; i < limit; i++)
+				returnArray.push(sortArray[i][0]);
+
+			if(oReq.status == 200){
+				resolve(returnArray);
+			}
+			else{
+				reject(Error(oReq.statusText));
+			}
+		}
+		oReq.open("get", "data.json", true);
+		oReq.onerror = function(){
+			reject(Error("Network Error"));
+		}
+		oReq.send();
+	});
+}
+
+/*https://www.reddit.com/subreddits/mine/subscriber.json
+
+function parseRedditData(limit){
+
+
+	var subredditList = [];
+	for(var i = 0; i < object.data.children.length; i++){
+		var currSub = object.data.children[i];
+		subredditList.push(currSub.data.display_name);
+	}
+	findCombinedRelated(subredditList, limit).then(function(response){
+		console.log(response);
+	});
+}
+*/
+
+
+var accessReddit = (function() {
+	var modhash, cookie;
+	return {
+		login: function(user, pass, callback) {
+			var xhr = new XMLHttpRequest();
+			xhr.open('POST', 'http://www.reddit.com/api/login?op=login-main&api_type=json&rem=true&user=' +
+					user + '&passwd=' + pass);
+			xhr.addEventListener('readystatechange', function() {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					var res = JSON.parse(xhr.responseText).json.data;
+					modhash = res.modhash;
+					cookie = res.cookie;
+					callback();
+				}
+			});
+			xhr.send();
+		},
+		parse: function(callback) {
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', 'https://www.reddit.com/subreddits/mine/subscriber.json');
+			xhr.setRequestHeader('X-Modhash', modhash);
+			document.cookie = cookie;
+			xhr.addEventListener('readystatechange', function() {
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					callback(xhr.responseText);
+				}
+			});
+			xhr.send();
+		}
+	};
+
+})();
