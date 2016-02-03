@@ -118,6 +118,9 @@ function findCombinedRelated(subreddits, limit){
 	});
 }
 
+
+//Ignore stuff under here :)
+
 /*https://www.reddit.com/subreddits/mine/subscriber.json
 
 function parseRedditData(limit){
@@ -134,7 +137,7 @@ function parseRedditData(limit){
 }
 */
 
-
+/*
 var accessReddit = (function() {
 	var modhash, cookie;
 	return {
@@ -166,4 +169,4 @@ var accessReddit = (function() {
 		}
 	};
 
-})();
+})();*/
